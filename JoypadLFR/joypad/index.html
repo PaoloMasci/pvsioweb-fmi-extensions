@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title></title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width">
+        <link href="lib/bootstrap.min.css" rel="stylesheet" media="screen">
+        <link href="lib/graph.css" rel="stylesheet" type="text/css"/>
+        <link href="lib/style.css" rel="stylesheet" type="text/css"/>
+        <link href="lib/style.css" rel="stylesheet" type="text/css"/>
+        <link href="lib/960.css" rel="stylesheet" type="text/css"/>
+    </head>
+    <body>
+        <!-- IMPORTANT: div content must be the first one from the top, otherwise the coordinates of the buttons are not computed correctly -->
+        <div id="content" class="content" style="display:block;">
+            <img src="joypad.png" usemap="#prototypeMap" id="prototypeImage"/>
+            <div id="speedometer-gauge-left"></div>
+            <div id="speedometer-gauge-right"></div>
+        </div>
+        <div id="open_connection" style="padding:0; border-style: solid; border-width: 1px; display: flex;">
+			<input type="submit" id="open" value="Open Connection" style="display:none;">
+			<div id="connection_status" style="padding: 10px 28px 10px 28px; background-color: red; border-width: 1px; display:none;">
+				DISCONNECTED :((
+			</div>
+		</div>
+		<div id="command_prompt" style="padding: 10px 28px 10px 28px; border-style: solid; border-width: 1px; display:none;">
+			Command prompt:
+			<input type="text" id="cmd" name="cmd" size="44"
+				   placeholder="Please enter a new PVS expression..." >
+			<input type="submit" id="send" value="Send">
+		</div>
+        <div id="splash" class="demo-splash" style="display:none;">
+            <div class="loader">
+                <div class="version">Mobile Robot User Interface</div>
+                <div class="bar">
+                    Loading
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                </div>
+            </div>
+        </div>
+        <script type="application/javascript" src="lib/layout.js"></script>
+        <script type="application/javascript" src="lib/promise-0.1.1.js"></script>
+        <script type="application/javascript" src="lib/keys.js"></script>
+        <script type="text/javascript" src="lib/jquery.js"></script>
+        <script type="text/javascript" src="lib/underscore.js"></script>
+        <script type="text/javascript" src="lib/d3.js"></script>
+        <script type="text/javascript" src="lib/backbone.js"></script>
+        <script type="text/javascript" src="lib/handlebars-v1.3.0.js"></script>
+        <script type="text/javascript" src="lib/bootstrap.min.js"></script>
+        <script type="text/javascript" src="lib/d3-gauge-plus.js"></script>
+        <script type="text/javascript" src="lib/require.js" data-main="js/index.js"></script>
+    </body>
+</html>

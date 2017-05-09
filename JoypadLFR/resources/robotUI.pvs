@@ -1,0 +1,128 @@
+robotUI: THEORY
+ BEGIN
+
+  %-- cruise control
+  CruiseControl: TYPE = { AUTO, MANUAL }
+
+  %-- light sensors
+  LightSensorReading: TYPE = { x: nonneg_real | x <= 255 }
+  LightSensors: TYPE = [#
+    left: LightSensorReading,
+    right: LightSensorReading
+  #]
+  Color: TYPE = { WHITE, BLACK }
+
+  %-- motor
+  Speed: TYPE = { x: real | x >= -1 AND x <= 1 }
+  MotorSpeed: TYPE = [#
+    left: Speed,
+    right: Speed
+  #]
+  IDLE: Speed = 0
+  MAX_CW_SPEED: Speed = 1
+  MAX_CCW_SPEED: Speed = -1
+
+  %-- gears
+  Gear: TYPE = { DRIVE, REVERSE, NEUTRAL }
+
+  %-- utility functions for setting clockwise/counterclockwise motor rotation speed (low-level APIs)
+  inc_CW_speed(s: Speed, x: nonneg_real): Speed =
+   IF s + x < MAX_CW_SPEED THEN s + x ELSE MAX_CW_SPEED ENDIF
+
+  inc_CCW_speed(s: Speed, x: nonneg_real): Speed =
+   IF s - x > MAX_CCW_SPEED THEN s - x ELSE MAX_CCW_SPEED ENDIF
+
+  dec_speed(s: Speed, x: nonneg_real): Speed =
+   COND
+    s >= IDLE -> IF s - x > IDLE THEN s - x ELSE IDLE ENDIF,
+    s < IDLE ->  IF s + x < IDLE THEN s + x ELSE IDLE ENDIF
+   ENDCOND
+
+  %-- user interface state
+  State: TYPE =
+        [# lightSensors: LightSensors,
+           motorSpeed: MotorSpeed,
+           userInput: MotorSpeed,
+	   gear: Gear,
+           cc: CruiseControl #]
+
+  init_state: State =
+      (# lightSensors := (# left := 0, right := 0 #),
+         motorSpeed := (# left := IDLE, right := IDLE #),
+         userInput := (# left := IDLE, right := IDLE #),
+	 gear := DRIVE,
+         cc := MANUAL #)
+
+  update_left_motor_speed(st: State): Speed =
+   LET ls = lightSensors(st) IN
+     COND ls`right < 150 AND ls`left < 150 -> 0.4,
+          ls`right > 150 AND ls`left < 150 -> 0.5,
+          ls`right < 150 AND ls`left > 150 -> 0.1,
+          ELSE -> 0.4 ENDCOND
+
+  update_right_motor_speed(st: State): Speed =
+   LET ls = lightSensors(st) IN  
+     COND ls`right < 150 AND ls`left < 150 -> -0.4,
+          ls`right > 150 AND ls`left < 150 -> -0.1,
+          ls`right < 150 AND ls`left > 150 -> -0.5,
+          ELSE -> -0.4 ENDCOND
+
+  tick(st: State): State =
+      IF cc(st) = AUTO
+        THEN st WITH [motorSpeed
+                       := (# left := update_left_motor_speed(st),
+                             right := update_right_motor_speed(st) #)]
+      ELSE st
+      ENDIF
+
+  %-- user actions
+  ACC_STEP: Speed = 0.1
+  accelerate(st: State): State =
+      st
+        WITH [cc := MANUAL,
+              motorSpeed
+                := (# left := COND
+		        gear(st) = DRIVE -> inc_CW_speed(motorSpeed(st)`left, ACC_STEP),
+			gear(st) = REVERSE -> inc_CW_speed(motorSpeed(st)`left, ACC_STEP),
+			gear(st) = NEUTRAL -> motorSpeed(st)`left ENDCOND,
+                      right := COND
+		        gear(st) = DRIVE -> inc_CCW_speed(motorSpeed(st)`right, ACC_STEP),
+			gear(st) = REVERSE -> inc_CW_speed(motorSpeed(st)`right, ACC_STEP),
+			gear(st) = NEUTRAL -> motorSpeed(st)`right ENDCOND #)]
+
+  BRAKE_STEP: Speed = 0.1
+  brake(st: State): State =
+      st
+        WITH [cc := MANUAL,
+              motorSpeed
+                := (# left := dec_speed(motorSpeed(st)`left, BRAKE_STEP),
+                      right := dec_speed(motorSpeed(st)`right, BRAKE_STEP) #)]
+
+  TURN_SPEED: Speed = 0.02
+  right(st: State): State =
+     st WITH [cc := MANUAL,
+              motorSpeed
+                := (# left := COND
+		        gear(st) = DRIVE OR gear(st) = REVERSE -> inc_CW_speed(motorSpeed(st)`left, TURN_SPEED),
+			ELSE -> motorSpeed(st)`left ENDCOND,
+                      right := COND
+		        gear(st) = DRIVE OR gear(st) = REVERSE -> inc_CW_speed(motorSpeed(st)`right, TURN_SPEED),
+			ELSE -> motorSpeed(st)`right ENDCOND #)]
+
+  left(st: State): State =
+     st WITH [cc := MANUAL,
+              motorSpeed
+                := (# left := COND
+		        gear(st) = DRIVE OR gear(st) = REVERSE -> inc_CCW_speed(motorSpeed(st)`left, TURN_SPEED),
+			ELSE -> motorSpeed(st)`left ENDCOND,
+                      right := COND
+		        gear(st) = DRIVE OR gear(st) = REVERSE -> inc_CCW_speed(motorSpeed(st)`right, TURN_SPEED),
+			ELSE -> motorSpeed(st)`right ENDCOND #)]
+
+  gear_drive(st: State): State = st WITH [ cc := MANUAL, gear := DRIVE ]
+  gear_reverse(st: State): State = st WITH [ cc := MANUAL, gear := REVERSE ]
+  gear_neutral(st: State): State = st WITH [ cc := MANUAL, gear := NEUTRAL ]
+
+  autopilot_on(st: State): State = st WITH [ cc := AUTO ]
+
+ END robotUI

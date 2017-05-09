@@ -1,0 +1,29 @@
+LFRController: THEORY
+ BEGIN IMPORTING robotUI
+
+  %-- APIS
+  init(x: real): State = init_state
+
+  press_accelerate(st: State): State = accelerate(st)
+  release_accelerate(st: State): State = st
+  click_accelerate(st: State): State = accelerate(st)
+
+  press_brake(st: State): State = brake(st)
+  release_brake(st: State): State = st
+  click_brake(st: State): State = brake(st)
+
+  press_right(st: State): State = right(st)
+  release_right(st: State): State = st
+  click_right(st: State): State = right(st)
+
+  press_left(st: State): State = left(st)
+  release_left(st: State): State = st
+  click_left(st: State): State = left(st)
+
+  click_drive(st: State): State = gear_drive(st)
+  click_reverse(st: State): State = gear_reverse(st)
+  click_neutral(st: State): State = gear_neutral(st)
+
+  click_autopilot(st: State): State = autopilot_on(st)
+
+END LFRController

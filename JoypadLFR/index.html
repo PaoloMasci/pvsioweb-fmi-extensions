@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<title></title>
+		<meta name="description" content="">
+		<meta name="viewport" content="width=device-width">
+	</head>
+	<body>
+		<script src="index.js"></script>
+		<div id="open_connection" style="padding: 10px 28px 10px 28px; border-style: solid; border-width: 1px; display: flex;">
+			<input type="submit" id="open" value="Open Connection">
+			<div id="connection_status" style="padding: 10px 28px 10px 28px; background-color: red; border-width: 1px;">
+				DISCONNECTED :((
+			</div>
+		</div>
+		<div id="command_prompt" style="padding: 10px 28px 10px 28px; border-style: solid; border-width: 1px;">
+			Command prompt:
+			<input type="text" id="cmd" name="cmd" size="44"
+				   placeholder="Please enter a new PVS expression..." >
+			<input type="submit" id="send" value="Send">
+		</div>
+
+	</body>
+</html>
