@@ -58,14 +58,14 @@ robotUI: THEORY
      COND ls`right < 150 AND ls`left < 150 -> 0.4,
           ls`right > 150 AND ls`left < 150 -> 0.5,
           ls`right < 150 AND ls`left > 150 -> 0.1,
-          ELSE -> 0.4 ENDCOND
+          ELSE -> motorSpeed(st)`left ENDCOND
 
   update_right_motor_speed(st: State): Speed =
    LET ls = lightSensors(st) IN  
      COND ls`right < 150 AND ls`left < 150 -> -0.4,
           ls`right > 150 AND ls`left < 150 -> -0.1,
           ls`right < 150 AND ls`left > 150 -> -0.5,
-          ELSE -> -0.4 ENDCOND
+          ELSE -> motorSpeed(st)`right ENDCOND
 
   tick(st: State): State =
       IF cc(st) = AUTO
@@ -83,7 +83,7 @@ robotUI: THEORY
               motorSpeed
                 := (# left := COND
 		        gear(st) = DRIVE -> inc_CW_speed(motorSpeed(st)`left, ACC_STEP),
-			gear(st) = REVERSE -> inc_CW_speed(motorSpeed(st)`left, ACC_STEP),
+			gear(st) = REVERSE -> inc_CCW_speed(motorSpeed(st)`left, ACC_STEP),
 			gear(st) = NEUTRAL -> motorSpeed(st)`left ENDCOND,
                       right := COND
 		        gear(st) = DRIVE -> inc_CCW_speed(motorSpeed(st)`right, ACC_STEP),
