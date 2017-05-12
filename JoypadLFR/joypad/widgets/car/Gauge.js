@@ -36,6 +36,38 @@
 define(function (require, exports, module) {
     "use strict";
 
+    var style = {
+            powergage: {
+                position: "absolute",
+                size: 170,
+                drawOuterCircle: true,
+                outerStrokeColor: "#838286",
+                outerFillColor: "#838286",
+                innerStrokeColor: "888",
+                innerFillColor: "#fff",
+                majorTickColor: "#000",
+                majorTickWidth: "2px",
+                minorTicks: 4,
+                minorTickColor: "#000",
+                max: 1,
+                min: -1,
+                initial: 0,
+                label: 'LEFT',
+                majorTicks: 7,
+                greenZones: [],
+                yellowZones: [],
+                redZones: [{ from: 0.8, to: 1 }, { from: -0.8, to: -1 }],
+                pointerFillColor: "#dc555a",
+                pointerStrokeColor: "#6f6e73",
+                pointerShowLabel: false,
+                pointerUseBaseCircle: true,
+                pointerBaseCircleAbovePointer: false,
+                pointerBaseCircleFillColor: "#838286",
+                pointerBaseCircleStrokeColor: "#838286",
+                pointerBaseCircleRadius: 0.2
+            }
+    };
+
     /**
      * @function <a name="Gauge">Gauge</a>
      * @description Gauge constructor.
@@ -98,9 +130,18 @@ define(function (require, exports, module) {
                 redZones: [ { from: (opt.max - (opt.max * 0.125)), to: opt.max } ]
             };
 
-            // Merge options provided over the gauge default ones
-            for (var attr in opt) { config[attr] = opt[attr]; }
-
+            // // Check if a style has been selected
+            // if (opt.style) {
+            //     for (var attr in style[opt.style]) {
+            //         config[attr] = style[opt.style][attr];
+            //     }
+            // }
+            // then merge options provided over the gauge default options
+            for (var attr in opt) {
+                if (attr !== "style") {
+                    config[attr] = opt[attr];
+                }
+            }
             return new d3_gauge_plus.Gauge(id, config);
         }
 
@@ -115,7 +156,8 @@ define(function (require, exports, module) {
         this.height = coords.height || 80;
         this.parent = (opt.parent) ? ("#" + opt.parent) : "body";
 
-        this.div = d3.select('#'+id)
+        this.div = d3.select(this.parent)
+            .append("div").attr('id', id)
             .style("position", opt.position)
             .style("top", this.top + "px").style("left", this.left + "px")
             .style("width", (this.width) + "px").style("height", (this.height) + "px");

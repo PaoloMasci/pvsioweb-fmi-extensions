@@ -14,10 +14,13 @@
     </head>
     <body>
         <!-- IMPORTANT: div content must be the first one from the top, otherwise the coordinates of the buttons are not computed correctly -->
-        <div id="content" class="content" style="display:block;">
-            <img src="joypad.png" usemap="#prototypeMap" id="prototypeImage"/>
-            <div id="speedometer-gauge-left"></div>
-            <div id="speedometer-gauge-right"></div>
+        <div id="content" class="content" style="display:flex;">
+            <div id="joypad" class="joypad" style="display:block;">
+                <img src="joypad.png" usemap="#prototypeMap" id="prototypeImage"/>
+            </div>
+            <!-- <div id="navigator" class="navigator" style="display:block;">
+                <img src="headsup-display.jpg" usemap="#prototypeMap" id="headsup-display"/>
+            </div> -->
         </div>
         <div id="open_connection" style="padding:0; border-style: solid; border-width: 1px; display: flex;">
 			<input type="submit" id="open" value="Open Connection" style="display:none;">

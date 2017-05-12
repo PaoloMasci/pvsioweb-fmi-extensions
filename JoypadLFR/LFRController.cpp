@@ -104,13 +104,12 @@ static int WebSocketCallback(struct lws* wsi, enum lws_callback_reasons reason, 
         printf("Received message: %s\n", (char*) in);
         sendToPVS((char*) in);
         strcpy(tempstate,state);
-        memset(variables,0,2000); // clenas variables before reusing
-	    sprintf(variables,"linear: %f\nangular: %f\nx: %f\ny: %f\n", fmiBuffer.realBuffer[8],fmiBuffer.realBuffer[9],fmiBuffer.realBuffer[6],fmiBuffer.realBuffer[7]);
+        memset(variables,0,2000); // we need to clean the variables before reusing them
+	    sprintf(variables,";(# linear := %f,\n   angular := %f,\n   x := %f,\n   y := %f #)\n", fmiBuffer.realBuffer[8],fmiBuffer.realBuffer[9],fmiBuffer.realBuffer[6],fmiBuffer.realBuffer[7]);
 		printf("%s\n",variables);
 		strcat(tempstate,variables);
         memcpy(lwssendstate + LWS_SEND_BUFFER_PRE_PADDING, tempstate, strlen(tempstate) );
         lws_write(wsi,(unsigned char *)lwssendstate + LWS_SEND_BUFFER_PRE_PADDING,strlen(tempstate),LWS_WRITE_TEXT);
-
         break;
     case LWS_CALLBACK_HTTP:
         printf("LWS_CALLBACK_HTTP\n");
