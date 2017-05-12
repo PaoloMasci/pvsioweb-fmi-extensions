@@ -13,12 +13,14 @@ require.config({
 
 require([
         "widgets/TouchscreenButton",
+        "widgets/BasicDisplay",
         "widgets/car/Gauge",
         "widgets/car/Navigator",
         "widgets/ButtonActionsQueue",
         "websockets/FMIClient"
     ], function (
         TouchscreenButton,
+        BasicDisplay,
         Gauge,
         Navigator,
         ButtonActionsQueue,
@@ -182,7 +184,27 @@ require([
 		    x0: 0.138,
 		    y0: -0.08
                 });
-        // car.navigator.addRouteData([ { x:0, y:50 }, { x:100, y:80 }, { x:200, y:40 }, { x:300, y:60 }, { x:400, y:30 } ]);
+        car.gear = new BasicDisplay(
+            'gear',
+            { top: 154, left: 380, width: 24, height: 26 },
+            {
+                parent: "joypad",
+                borderWidth: 2,
+                borderStyle: "solid",
+                borderColor: "black",
+                fontsize: 22,
+                backgroundColor: "gray"
+            }
+        );
+        car.position = new BasicDisplay(
+            'position',
+            { top: 246, left: 462, width: 176, height: 12 },
+            {
+                parent: "joypad",
+                fontsize: 10,
+                backgroundColor: "gray"
+            }
+        );
 
         // Render car dashboard components
         function render(res) {
@@ -195,6 +217,8 @@ require([
             car.reverse.render(res);
             car.autopilot.render(res);
             car.navigator.reveal();
+            car.gear.render({ gear: "N" });
+            car.position.render("(0, 0)");
             // car.navigator.render([{ x:0, y:-50 }, { x:-100, y:-50 }, { x:-100, y:-150 }, { x:100, y:-150 }, { x:100, y:-100 }, { x:200, y:50 }, { x: -200, y: -200 }]);
             // gauges
             if (res) {
@@ -203,21 +227,28 @@ require([
                 if (ans.length >= 1) {
                     state = PVSioStateParser.parse(ans[0]);
                     if (state) {
-                        var left = PVSioStateParser.evaluate(state["motorSpeed "]["left "]);
+                        var left = PVSioStateParser.evaluate(state["motorSpeed"]["left"]);
                         car.speed_left.render(left);
-                        var right = PVSioStateParser.evaluate(state["motorSpeed "]["right "]);
+                        var right = PVSioStateParser.evaluate(state["motorSpeed"]["right"]);
                         car.speed_right.render(right);
+                        // basic display supports automatic parsing of the state
+                        var gear = (state["gear"] === "DRIVE")? "D"
+                                     : (state["gear"] === "REVERSE")? "R"
+                                     : (state["gear"] === "NEUTRAL")? "N"
+                                     : "E";
+                        car.gear.render(gear);
                     }
                 }
                 if (ans.length >= 2) {
                     state = PVSioStateParser.parse(ans[1]);
                     if (state) {
-                        var pos_x = PVSioStateParser.evaluate(state["x "]);
-                        var pos_y = PVSioStateParser.evaluate(state["y "]);
+                        var pos_x = PVSioStateParser.evaluate(state["x"]);
+                        var pos_y = PVSioStateParser.evaluate(state["y"]);
                         car.navigator.render([{ x: pos_x, y: pos_y }]);
-                        var linear = PVSioStateParser.evaluate(state["linear "]);
+                        car.position.render("(" + pos_x + ", " + pos_y + ")");
+                        var linear = PVSioStateParser.evaluate(state["linear"]);
                         car.speed.render(linear);
-                        var angular = PVSioStateParser.evaluate(state["angular "]);
+                        var angular = PVSioStateParser.evaluate(state["angular"]);
                         // we should use angular to rotate the arrow when the vehicle is spinning
                     }
                 }
