@@ -37,9 +37,7 @@ define(function (require, exports, module) {
     "use strict";
 
     var style = {
-            powergage: {
-                position: "absolute",
-                size: 170,
+            powergauge: {
                 drawOuterCircle: true,
                 outerStrokeColor: "#838286",
                 outerFillColor: "#838286",
@@ -130,12 +128,13 @@ define(function (require, exports, module) {
                 redZones: [ { from: (opt.max - (opt.max * 0.125)), to: opt.max } ]
             };
 
-            // // Check if a style has been selected
-            // if (opt.style) {
-            //     for (var attr in style[opt.style]) {
-            //         config[attr] = style[opt.style][attr];
-            //     }
-            // }
+            // Check if a style has been selected
+            if (opt.style) {
+                console.log(style[opt.style]);
+                for (var attr in style[opt.style]) {
+                    config[attr] = style[opt.style][attr];
+                }
+            }
             // then merge options provided over the gauge default options
             for (var attr in opt) {
                 if (attr !== "style") {
@@ -154,6 +153,7 @@ define(function (require, exports, module) {
         this.left = coords.left || 0;
         this.width = coords.width || 200;
         this.height = coords.height || 80;
+        opt.position = opt.position || "absolute";
         this.parent = (opt.parent) ? ("#" + opt.parent) : "body";
 
         this.div = d3.select(this.parent)
@@ -161,9 +161,6 @@ define(function (require, exports, module) {
             .style("position", opt.position)
             .style("top", this.top + "px").style("left", this.left + "px")
             .style("width", (this.width) + "px").style("height", (this.height) + "px");
-
-        opt.position = opt.position || "absolute";
-
 
         // Gauge params
         opt.max = opt.max || 200;
