@@ -31,9 +31,9 @@
 #include <signal.h>
 #include <stdlib.h>
 
-#define BOOL_COUNT 10
-#define REAL_COUNT 10
-#define INT_COUNT 10
+#define BOOL_COUNT 12
+#define REAL_COUNT 12
+#define INT_COUNT 12
 #define FMI_COSIMULATION  
 
 struct FmiBuffer{

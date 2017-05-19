@@ -88,6 +88,10 @@
 		<ScalarVariable name="linearVelocity" valueReference="8" causality="input" variability="continuous"><Real start="0.0" /></ScalarVariable>
 		<!-- Index 9 -->
 		<ScalarVariable name="angularVelocity" valueReference="9" causality="input" variability="continuous"><Real start="0.0" /></ScalarVariable>
+		<!-- Index 10 -->
+		<ScalarVariable name="left_wheel_rotation" valueReference="10" causality="input" variability="continuous"><Real start="0.0" /></ScalarVariable>
+		<!-- Index 11 -->
+		<ScalarVariable name="right_wheel_rotation" valueReference="11" causality="input" variability="continuous"><Real start="0.0" /></ScalarVariable>
 
 		
 		

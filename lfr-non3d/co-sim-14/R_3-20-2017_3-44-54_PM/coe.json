@@ -1,0 +1,1 @@
+{"startTime":0,"endTime":10,"multimodel_path":"Multi-models/lfr-non3d/lfr-non3d.mm.json","livestream":{"{bodyFMU}.body":["body.position.position[0]","body.position.position[1]"]},"livestreamInterval":0,"visible":false,"loggingOn":false,"overrideLogLevel":null,"enableAllLogCategoriesPerInstance":false,"algorithm":{"type":"fixed-step","size":0.01},"postProcessingScript":""}

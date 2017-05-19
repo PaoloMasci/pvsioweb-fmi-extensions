@@ -105,7 +105,7 @@ static int WebSocketCallback(struct lws* wsi, enum lws_callback_reasons reason, 
         sendToPVS((char*) in);
         strcpy(tempstate,state);
         memset(variables,0,2000); // we need to clean the variables before reusing them
-	    sprintf(variables,";(# linear := %f,\n   angular := %f,\n   x := %f,\n   y := %f #)\n", fmiBuffer.realBuffer[8],fmiBuffer.realBuffer[9],fmiBuffer.realBuffer[6],fmiBuffer.realBuffer[7]);
+	    sprintf(variables,";(# linear := %f,\n   angular := %f,\n   x := %f,\n   y := %f,\n   left_rotation := %f,\n   right_rotation := %f #)\n", fmiBuffer.realBuffer[8],fmiBuffer.realBuffer[9],fmiBuffer.realBuffer[6],fmiBuffer.realBuffer[7],fmiBuffer.realBuffer[10],fmiBuffer.realBuffer[11]);
 		printf("%s\n",variables);
 		strcat(tempstate,variables);
         memcpy(lwssendstate + LWS_SEND_BUFFER_PRE_PADDING, tempstate, strlen(tempstate) );
