@@ -116,7 +116,7 @@ define(function (require, exports, module) {
 
         opt.x0 = (isNaN(parseFloat(opt.x0)))? 0 : parseFloat(opt.x0);
         opt.y0 = (isNaN(parseFloat(opt.y0)))? 0 : parseFloat(opt.y0);
-        this.initial_position = { x: opt.x0 * this.scaleX, y: opt.y0 * this.scaleY };
+        this.initial_position = { x: opt.x0, y: opt.y0  };
         this.data = [];
 
         opt.interpolation = opt.interpolation || "basis";

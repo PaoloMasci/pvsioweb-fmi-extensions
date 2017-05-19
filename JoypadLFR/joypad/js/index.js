@@ -176,8 +176,12 @@ require([
                 }, {
                     // autoscale: true,
                     parent: "joypad",
-                    maxX: 400,
-                    maxY: 400
+		    maxX: 0.296,
+                    maxY: 0.4914,
+		    x0: 0.138,
+		    y0: -0.08
+		   
+		   
                 });
         car.gear = new BasicDisplay(
             'gear',
@@ -224,7 +228,7 @@ require([
             car.navigator.reveal();
             car.autopilot_display.render({ cc: "MANUAL" });
             car.gear.render({ gear: "N" });
-            car.position.render("(0, 0)");
+            car.position.render("(0.138, -0.08)");
             // car.navigator.render([{ x:0, y:-50 }, { x:-100, y:-50 }, { x:-100, y:-150 }, { x:100, y:-150 }, { x:100, y:-100 }, { x:200, y:50 }, { x: -200, y: -200 }]);
             // gauges
             if (res) {
