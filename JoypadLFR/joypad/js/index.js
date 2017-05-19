@@ -87,7 +87,7 @@ require([
         }, {
             parent: "joypad"
         });
-        car.neutral = new TouchscreenButton("neutral", {  width: 40, height: 25, top: 390, left: 630 }, {
+        car.neutral = new TouchscreenButton("neutral", {  width: 40, height: 25, top: 388, left: 630 }, {
             callback: onMessageReceived,
             backgroundColor: "transparent",
             evts: ['click'],
@@ -115,7 +115,7 @@ require([
             callback: onMessageReceived,
             backgroundColor: "transparent",
             evts: ['click'],
-            keyCode: 65 // a
+            keyCode: 72 // h
         }, {
             parent: "joypad"
         });
@@ -200,6 +200,16 @@ require([
                 backgroundColor: "gray"
             }
         );
+        car.autopilot_display = new BasicDisplay(
+            'cc',
+            { top: 18, left: 386, width: 134, height: 26 },
+            {
+                parent: "joypad",
+                fontsize: 16,
+                fontColor: "white",
+                backgroundColor: "transparent"
+            }
+        );
 
         // Render car dashboard components
         function render(res) {
@@ -212,6 +222,7 @@ require([
             car.reverse.render(res);
             car.autopilot.render(res);
             car.navigator.reveal();
+            car.autopilot_display.render({ cc: "MANUAL" });
             car.gear.render({ gear: "N" });
             car.position.render("(0, 0)");
             // car.navigator.render([{ x:0, y:-50 }, { x:-100, y:-50 }, { x:-100, y:-150 }, { x:100, y:-150 }, { x:100, y:-100 }, { x:200, y:50 }, { x: -200, y: -200 }]);
@@ -232,6 +243,7 @@ require([
                                      : (state["gear"] === "NEUTRAL")? "N"
                                      : "E";
                         car.gear.render(gear);
+                        car.autopilot_display.render(state);
                     }
                 }
                 if (ans.length >= 2) {

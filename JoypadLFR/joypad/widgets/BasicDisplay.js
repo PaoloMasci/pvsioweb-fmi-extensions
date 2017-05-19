@@ -258,16 +258,12 @@ define(function (require, exports, module) {
             this.example = this.txt;
             // set blinking
             var elemClass = document.getElementById(this.id()).getAttribute("class");
-            // If element does not have the class attribute, null is returned - in that case, set an empty string as element class
-            if(!elemClass) {
-                document.getElementById(this.id()).setAttribute('class', '');
-                var elemClass = document.getElementById(this.id()).getAttribute("class");
+            if(elemClass) {
+                elemClass = (opt.blinking || this.blinking) ?
+                                ((elemClass.indexOf("blink") < 0) ? (elemClass + " blink") : elemClass)
+                                : elemClass.replace(" blink", "");
+                document.getElementById(this.id()).setAttribute("class", elemClass);
             }
-
-            elemClass = (opt.blinking || this.blinking) ?
-                            ((elemClass.indexOf("blink") < 0) ? (elemClass + " blink") : elemClass)
-                            : elemClass.replace(" blink", "");
-            document.getElementById(this.id()).setAttribute("class", elemClass);
             // render content
             var context = document.getElementById(this.id() + "_canvas").getContext("2d");
             context.textBaseline = this.textBaseline;
