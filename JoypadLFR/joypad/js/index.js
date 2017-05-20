@@ -30,6 +30,8 @@ require([
         var client = FMIClient.getInstance();
         var PVSioStateParser = require("util/PVSioStateParser");
 
+        var DBG = false;
+
         // Function automatically invoked by PVSio-web when the back-end sends states updates
         function onMessageReceived(err, event) {
             console.log(event);
@@ -180,8 +182,8 @@ require([
                     maxY: 0.4914,
 		    x0: 0.138,
 		    y0: -0.08
-		   
-		   
+
+
                 });
         car.gear = new BasicDisplay(
             'gear',
@@ -234,13 +236,17 @@ require([
             if (res) {
                 var ans = res.split(";");
                 var state = {};
+                var left = 0;
+                var right = 0;
                 if (ans.length >= 1) {
                     state = PVSioStateParser.parse(ans[0]);
                     if (state) {
-                        var left = PVSioStateParser.evaluate(state["motorSpeed"]["left"]);
-                        car.speed_left.render(left);
-                        var right = PVSioStateParser.evaluate(state["motorSpeed"]["right"]);
-                        car.speed_right.render(right);
+                        if (DBG) {
+                            left = PVSioStateParser.evaluate(state["motorSpeed"]["left"]);
+                            car.speed_left.render(left);
+                            right = PVSioStateParser.evaluate(state["motorSpeed"]["right"]);
+                            car.speed_right.render(right);
+                        }
                         // basic display supports automatic parsing of the state
                         var gear = (state["gear"] === "DRIVE")? "D"
                                      : (state["gear"] === "REVERSE")? "R"
@@ -253,6 +259,12 @@ require([
                 if (ans.length >= 2) {
                     state = PVSioStateParser.parse(ans[1]);
                     if (state) {
+                        if (!DBG) {
+                            left = PVSioStateParser.evaluate(state["left_rotation"]);
+                            car.speed_left.render(left);
+                            right = PVSioStateParser.evaluate(state["right_rotation"]);
+                            car.speed_right.render(right);
+                        }
                         var pos_x = PVSioStateParser.evaluate(state["x"]);
                         var pos_y = PVSioStateParser.evaluate(state["y"]);
                         car.navigator.render([{ x: pos_x, y: pos_y }]);
