@@ -42,16 +42,14 @@ robotUI: THEORY
   State: TYPE =
         [# lightSensors: LightSensors,
            motorSpeed: MotorSpeed,
-           userInput: MotorSpeed,
 	   gear: Gear,
            cc: CruiseControl #]
 
   init_state: State =
       (# lightSensors := (# left := 0, right := 0 #),
          motorSpeed := (# left := IDLE, right := IDLE #),
-         userInput := (# left := IDLE, right := IDLE #),
 	 gear := DRIVE,
-         cc := MANUAL #)
+         cc := AUTO #)
 
   update_left_motor_speed(st: State): Speed =
    LET ls = lightSensors(st) IN

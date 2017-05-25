@@ -66,9 +66,6 @@ int FtS[2]; 		// Father to Son
 int StF[2];			// Son to Father
 int pid_of_son;
 int first = 0;
-double lfLeftVal;
-double lfRightVal;
-double servoVal[2];
 
 double temp1,temp2;
 FILE* fd;
@@ -100,38 +97,38 @@ static int WebSocketCallback(struct lws* wsi, enum lws_callback_reasons reason, 
         printf("CLIENT DISCONNECTED!\n\n");
         break;
     case LWS_CALLBACK_RECEIVE:
-        printf("LWS_CALLBACK_RECEIVE\n");
-        printf("Received message: %s\n", (char*) in);
+       // printf("LWS_CALLBACK_RECEIVE\n");
+        //printf("Received message: %s\n", (char*) in);
         sendToPVS((char*) in);
         strcpy(tempstate,state);
         memset(variables,0,2000); // we need to clean the variables before reusing them
 	    sprintf(variables,";(# linear := %f,\n   angular := %f,\n   x := %f,\n   y := %f,\n   left_rotation := %f,\n   right_rotation := %f #)\n", fmiBuffer.realBuffer[8],fmiBuffer.realBuffer[9],fmiBuffer.realBuffer[6],fmiBuffer.realBuffer[7],fmiBuffer.realBuffer[10],fmiBuffer.realBuffer[11]);
-		printf("%s\n",variables);
+		//printf("%s\n",variables);
 		strcat(tempstate,variables);
         memcpy(lwssendstate + LWS_SEND_BUFFER_PRE_PADDING, tempstate, strlen(tempstate) );
         lws_write(wsi,(unsigned char *)lwssendstate + LWS_SEND_BUFFER_PRE_PADDING,strlen(tempstate),LWS_WRITE_TEXT);
         break;
     case LWS_CALLBACK_HTTP:
-        printf("LWS_CALLBACK_HTTP\n");
+      //  printf("LWS_CALLBACK_HTTP\n");
         break;
     case LWS_CALLBACK_LOCK_POLL:
-        printf("LWS_CALLBACK_LOCK_POLL\n");
+     //   printf("LWS_CALLBACK_LOCK_POLL\n");
         break;
     case LWS_CALLBACK_ADD_POLL_FD:
-        printf("LWS_CALLBACK_ADD_POLL_FD\n");
+     //   printf("LWS_CALLBACK_ADD_POLL_FD\n");
         break;
     case LWS_CALLBACK_UNLOCK_POLL:
-        printf("LWS_CALLBACK_UNLOCK_POLL\n");
+     //   printf("LWS_CALLBACK_UNLOCK_POLL\n");
         break;
     case LWS_CALLBACK_PROTOCOL_INIT:
-        printf("LWS_CALLBACK_PROTOCOL_INIT\n");
+       // printf("LWS_CALLBACK_PROTOCOL_INIT\n");
         break;
     case LWS_CALLBACK_GET_THREAD_ID:
-        printf("TIMEOUT\n");
-        printf("LWS_CALLBACK_GET_THREAD_ID\n");
+       // printf("TIMEOUT\n");
+       // printf("LWS_CALLBACK_GET_THREAD_ID\n");
         break;
     case LWS_CALLBACK_WSI_DESTROY:
-        printf("Timeout Happened %i\n", callback_reason);
+      //  printf("Timeout Happened %i\n", callback_reason);
         break;
     default:
         printf("Unmanaged Callback Reason! %i\n", callback_reason);
@@ -187,7 +184,7 @@ int WebsocketServer(/* input variables */
                 const double Vget
                 /* output variables */
                 ) {
-    printf("BLOCK STARTED\n");
+    //printf("BLOCK STARTED\n");
 
     time_t rt;           /* real time */
     rt = time(0);
@@ -210,14 +207,14 @@ int WebsocketServer(/* input variables */
         while (repeat) {   /* iterate until connection established */
             if (!force_exit) {
                 /* wait for incoming msg, up to 100 ms */
-                lws_service(context, 100);
+                lws_service(context, 0);
                 repeat = FALSE;
             } else {
                 close_websocket();
                 repeat = FALSE;
             }
         } /* END while */
-        printf("BLOCK END\n");
+       // printf("BLOCK END\n");
         return port;
     }
 }
@@ -249,7 +246,7 @@ void initialize(const char* location) {
 	char c[100];
 	char e[100];
 	char f[200];
-	printf("%s\n",location);
+	//printf("%s\n",location);
 	strcpy(a, location);
 	strcat(a,"/");
 	strcpy(b, location);
@@ -278,12 +275,6 @@ void initialize(const char* location) {
 	char *parmList1[] = {"/bin/chmod", "+x","-R", (char*)&location[5],NULL};
 
 
-
-	lfLeftVal  = 0;
-	lfRightVal = 0;
-	servoVal[0]=servoVal[1]= 0.0;
-
-
 	pipe(FtS);
     pipe(StF);
 
@@ -295,6 +286,7 @@ void initialize(const char* location) {
 	getcwd(f,sizeof(f));
 	chdir((char*)&location[5]);
 	chdir("PVS6.0/");
+	sleep(1);
 	system("./bin/relocate");
 
     sleep(1);
@@ -325,12 +317,12 @@ void initialize(const char* location) {
 	sleep(1);
 	read(StF[0], banner, sizeof(banner));		// removes the  banner
 	fd=fdopen(StF[0], "r");
-	setlocale(LC_ALL, "C");
+	setlocale(LC_ALL, "C");						// needed for INTO-CPS
 	sprintf(sendbuff,"init_state;");
 	write(FtS[1], sendbuff,strlen(sendbuff));
 	fgets(r3, sizeof(r3),fd);
 	//printf("%s\n", r3);
-	ret = fread(state,1,183,fd); // 183 is the minimum possibile
+	ret = fread(state,1,135,fd); // 183 is the minimum possibile
 	while(findVariable("<PVSio>",state) == -1){
 		ret+= fread(&state[ret],1,1,fd);
 	}
@@ -350,21 +342,36 @@ void initialize(const char* location) {
  * At this point of development the parsing of the string is hardcoded
  * TODO read the string format from a config file*/
 void sendToPVS(const char* action) {
+	
+	/**
+	 *
+	 * we need to change the state according to the input of the FMU
+	 *since we DO change the state we have to access all variables one by one
+	 * **/
+	index_state=findVariable("lightSensors",state);
+	index_state1= findVariable("left",&state[index_state]);
+	convertDoubletoString(index_state+index_state1,1);
+
+	index_state=findVariable("lightSensors",state);
+	index_state2= findVariable("right",&state[index_state]);
+	convertDoubletoString(index_state+index_state2,2);
+	
+	
 	fflush(fd);
 	if(strcmp(action,"tick")==0) WebsocketServer(fmiBuffer.realBuffer[1],fmiBuffer.realBuffer[2]); // we want to check the websocket only during the doStep call and avoid doing it after receiving a message
 	sprintf(sendbuff,"%s(",action);
 	strcat(sendbuff,state);
 	strcat(sendbuff,");");
-	printf("%s\n",sendbuff);
+	//printf("%s\n",sendbuff);
 	memset(state,0,2000); // cleans state before using it
 	write(FtS[1], sendbuff,strlen(sendbuff));
 	do{
 		fgets(r3, sizeof(r3),fd);
-		printf("%s\n", r3);
+		//printf("%s\n", r3);
 	}
-	while((strcmp(" ==>\n",r3)!=0) && (strcmp("==>\n",r3)!=0)); //  ";;;;;GC:;;;;;finished"  followed by "==>" withput whitespace
+	while((strcmp(" ==>\n",r3)!=0) && (strcmp("==>\n",r3)!=0)); //  ";;;;;GC:;;;;;finished"  followed by "==>" without whitespace
 
-	ret = fread(state,1,183,fd); // 183 is the minimum possibile
+	ret = fread(state,1,135,fd); // 183 is the minimum possibile
 	while(findVariable("<PVSio>",state) == -1){
 		ret+= fread(&state[ret],1,1,fd);
 
@@ -375,7 +382,7 @@ void sendToPVS(const char* action) {
 
 	/**
 	 * we need to change the output of the FMU according to the state
-	 *
+	 * since we don't change state we can start from the first and then advance till the last
 	 * **/
 	index_state=findVariable("motorSpeed",state);
 	index_state1= findVariable("left",&state[index_state]);
@@ -383,18 +390,7 @@ void sendToPVS(const char* action) {
 	convertStringtoDouble(index_state+index_state1,3);
 	convertStringtoDouble(index_state+index_state2,4);
 
-	/**
-	 *
-	 * we need to change the state according to the input of the FMU
-	 *
-	 * **/
-	index_state=findVariable("lightSensors",state);
-	index_state1= findVariable("left",&state[index_state]);
-	convertDoubletoString(index_state+index_state1,1);
-
-	index_state=findVariable("lightSensors",state);
-	index_state2= findVariable("right",&state[index_state]);
-	convertDoubletoString(index_state+index_state2,2);
+	
 }
 /*
  * This function simply sends the exit command

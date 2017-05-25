@@ -238,11 +238,7 @@ extern "C" fmi2Status fmi2CancelStep(fmi2Component c)
 extern "C" fmi2Status fmi2DoStep(fmi2Component c, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize,
 		fmi2Boolean noSetFMUStatePriorToCurrentPoint)
 {
-	
 	sendToPVS("tick");
-	
-	/*fmiBuffer.realBuffer[1]=fmiBuffer.realBuffer[1]+10;  used to simulate an input change
-	fmiBuffer.realBuffer[2]=fmiBuffer.realBuffer[2]+20;  used to simulate an input change*/
 	return fmi2OK;
 }
 

@@ -129,11 +129,11 @@ require([
                 },
                 {
                     parent: "joypad",
-                    max: 1,
-                    min: -1,
+                    max: 5.18,
+                    min: -5.18,
                     initial: 0,
                     label: 'LEFT',
-                    redZones: [{ from: 0.68, to: 1 }, { from: -0.68, to: -1 }],
+                    redZones: [{ from: 3.45, to: 5.18 }, { from: -3.45, to: -5.18 }],
                     style: "powergauge"
                 });
         car.speed_right = new Gauge('speedometer-gauge-right',
@@ -145,11 +145,11 @@ require([
                 {
                     parent: "joypad",
                     size: 90,
-                    max: 1,
-                    min: -1,
+                    max: 5.18,
+                    min: -5.18,
                     initial: 0,
                     label: 'RIGHT',
-                    redZones: [{ from: 0.68, to: 1 }, { from: -0.68, to: -1 }],
+                    redZones: [{ from: 3.45, to: 5.18 }, { from: -3.45, to: -5.18 }],
                     style: "powergauge"
                 });
         car.speed = new Gauge('speedometer-gauge-main',
@@ -180,8 +180,8 @@ require([
                     parent: "joypad",
 		    maxX: 0.296,
                     maxY: 0.4914,
-		    x0: 0.138,
-		    y0: -0.08
+		    x0: 0,
+		    y0: 0
 
 
                 });
@@ -279,6 +279,6 @@ require([
         }
 
         render();
-        start_tick(500); // tick interval is in milliseconds
+        start_tick(250); // tick interval is in milliseconds
 
 });
