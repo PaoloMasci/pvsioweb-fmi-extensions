@@ -38,24 +38,7 @@ require([
             render(event);
         }
 
-        // Function used for polling the robot state at periodic intervals
-        var tick;
-        function start_tick(interval) {
-            if (!tick) {
-                tick = setInterval(function () {
-                    ButtonActionsQueue.getInstance().queueGUIAction("tick", onMessageReceived);
-                }, interval);
-            }
-        }
-        function stop_tick() {
-            if (tick) {
-                clearInterval(tick);
-                tick = null;
-            }
-        }
-
         var car = {};
-
         // ----------------------------- DASHBOARD INTERACTION -----------------------------
         car.left = new TouchscreenButton("left", {  width: 40, height: 25, top: 390, left: 250 }, {
             callback: onMessageReceived,
@@ -178,12 +161,11 @@ require([
                 }, {
                     // autoscale: true,
                     parent: "joypad",
-		    maxX: 0.296,
+		            maxX: 0.296,
                     maxY: 0.4914,
-		    x0: 0,
-		    y0: 0
-
-
+        		    x0: 0,
+        		    y0: 0,
+                    lineColor: "blue"
                 });
         car.gear = new BasicDisplay(
             'gear',
@@ -230,8 +212,6 @@ require([
             car.navigator.reveal();
             car.autopilot_display.render({ cc: "MANUAL" });
             car.gear.render({ gear: "N" });
-            car.position.render("(0.138, -0.08)");
-            // car.navigator.render([{ x:0, y:-50 }, { x:-100, y:-50 }, { x:-100, y:-150 }, { x:100, y:-150 }, { x:100, y:-100 }, { x:200, y:50 }, { x: -200, y: -200 }]);
             // gauges
             if (res) {
                 var ans = res.split(";");
@@ -278,6 +258,36 @@ require([
             }
         }
 
+        ButtonActionsQueue.getInstance().addListener("FMI_RECONNECTED", function (evt) {
+            console.log("reconnected!");
+            car.navigator.resetDisplay({
+                keepOldTrace: true,
+                changeColor: true
+            });
+        });
+
+        // Function used for polling the robot state at periodic intervals
+        var tick;
+        function start_tick(interval) {
+            if (!tick) {
+                tick = setInterval(function () {
+                    ButtonActionsQueue.getInstance().queueGUIAction("tick", onMessageReceived);
+                }, interval);
+            }
+        }
+        function stop_tick() {
+            if (tick) {
+                clearInterval(tick);
+                tick = null;
+            }
+        }
+
+        // -- dbg lines for testing
+        // car.position.render("(0.138, -0.08)");
+        // car.navigator.render([{ x:0, y:-.50 }, { x:-.100, y:-.50 }, { x:-.100, y:-.150 }, { x:.100, y:-.150 }, { x:.100, y:-.100 }, { x:.200, y:.50 }, { x:-.200, y:-.200 }]);
+        // --
+        
+        // start the simulation
         render();
         start_tick(250); // tick interval is in milliseconds
 

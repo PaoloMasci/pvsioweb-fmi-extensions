@@ -5,19 +5,24 @@ define(function (require, exports, module) {
 
     var guiActions, instance;
     var FMIClient = require("websockets/FMIClient").getInstance();
-    var buffer = [];
-    var busy = false;
+    var eventDispatcher = require("util/eventDispatcher");
 
     function ButtonActionsQueue() {
         guiActions = Promise.resolve();
+        this.was_connected = false;
+        this.busy = false;
+        this.buffer = [];
+        return eventDispatcher(this);
     }
 
-    ButtonActionsQueue.prototype.queueGUIAction = function (action, cb) {
+    ButtonActionsQueue.prototype.queueGUIAction = function (action, cb, opt) {
+        opt = opt || {};
+        var _this = this;
         function try_send() {
-            if (buffer.length && !busy) {
-                busy = true;
+            if (_this.buffer.length && !_this.busy) {
+                _this.busy = true;
                 return new Promise(function (resolve, reject) {
-                    var elem = buffer.pop();
+                    var elem = _this.buffer.pop();
                     var x = elem.action;
                     var callback = elem.callback;
                     console.log("sending action " + x);
@@ -25,32 +30,45 @@ define(function (require, exports, module) {
                         callback(err, res);
                         if (err) {
                             reject(err);
-                            busy = false;
+                            _this.busy = false;
                             try_send();
                         } else {
                             resolve(res);
-                            busy = false;
+                            _this.busy = false;
                             try_send();
                         }
                     }).catch(function (err) {
+                        _this.fire({
+                            type: "FMI_CONNECTION_ERROR"
+                        });
                         reject(err);
-                        busy = false;
+                        _this.busy = false;
                         try_send();
                     });
                 });
             }
         }
         function queue_action() {
-            buffer.push({ action: action, callback: cb });
+            _this.buffer.push({ action: action, callback: cb });
         }
         var ws = FMIClient.getWebSocket();
         cb = cb || function () {};
         if (ws) {
             guiActions = guiActions.then(function (res) {
                 if (FMIClient.isWebSocketConnected()) {
+                    if (!_this.was_connected) {
+                        _this.was_connected = true;
+                        _this.fire({
+                            type: "FMI_RECONNECTED"
+                        });
+                    }
                     queue_action();
                     try_send();
                 } else {
+                    _this.was_connected = false;
+                    _this.fire({
+                        type: "FMI_TRYING_TO_CONNECT"
+                    });
                     FMIClient.connectToServer().then(function (res) {
                         queue_action();
                         try_send();

@@ -16,6 +16,28 @@ define(function (require, exports, module) {
     var Widget = require("widgets/Widget"),
         property = require("util/property");
 
+    var colors = [
+        "steelblue",
+        "red",
+        "green",
+        "blue",
+        "darkblue",
+        "darkorange",
+        "darkviolet",
+        "firebrick",
+        "indianred",
+        "grey",
+        "magenta",
+        "mediumspringgreen",
+        "black",
+        "saddlebrown",
+        "tan",
+        "violet",
+        "yellow",
+        "hotpink"
+    ];
+    var maxC = colors.length;
+
     /**
      * @function <a name="Navigator">Navigator</a>
      * @description Navigator constructor.
@@ -37,6 +59,8 @@ define(function (require, exports, module) {
                     cardinal-open - an open Cardinal spline; may not intersect the start or end, but will intersect other control points.
                     cardinal-closed - a closed Cardinal spline, as in a loop.
                     monotone - cubic interpolation that preserves monotonicity in y.
+                - lineColor: (string) a valid HTML color, e.g., "steelblue", "rgb(227, 20, 6)", etc.
+                - backgrounColor: (string) a valid HTML color, e.g., "steelblue", "rgb(227, 20, 6)", etc.
      *
      * @memberof module:Navigator
      * @instance
@@ -45,6 +69,7 @@ define(function (require, exports, module) {
         opt = opt || {};
         coords = coords || {};
 
+        this.colorIndex = 0;
         this.id = property.call(this, id);
         this.parent = (opt.parent) ? ("#" + opt.parent) : "body";
         this.top = coords.top || 0;
@@ -62,7 +87,7 @@ define(function (require, exports, module) {
         this.scaleX = this.width / (2 * this.maxX);
         this.scaleY = this.height / (2 * this.maxY);
 
-        this.lineColor = opt.lineColor || "steelblue";
+        this.lineColor = opt.lineColor || colors[this.colorIndex];
         this.arrowColor = opt.arrowColor || this.lineColor;
 
         this.align = opt.align || "center";
@@ -155,7 +180,7 @@ define(function (require, exports, module) {
      */
     Navigator.prototype.render = function (data, opt) {
         function getRouteData (_this, data) {
-            function no_move() {
+            function pos_change() {
                 return data.length === 1 &&
                         !(data[0].x === _this.data[_this.data.length - 1].x &&
                             data[0].y === _this.data[_this.data.length - 1].y) ||
@@ -163,7 +188,7 @@ define(function (require, exports, module) {
                                 data[0].y === _this.initial_position.y);
             }
             if (data) {
-                if (data.length > 1 || !_this.data.length || no_move()) {
+                if (data.length > 1 || !_this.data.length || pos_change()) {
                     // route data is an array of objects { x: float, y: float }, e.g., [ { x:0, y:50 }, { x:100, y:80 }, { x:200, y:40 }, { x:300, y:60 }, { x:400, y:30 } ];
                     // if (_this.autoscale) {
                     //     var maxX = Math.max.apply( Math, data.map(function(d){ return d.x; }) );
@@ -177,7 +202,10 @@ define(function (require, exports, module) {
                     //     _this.scaleX = _this.width / _this.maxX;
                     //     _this.scaleY = _this.height / _this.maxY;
                     // }
-                    return [ _this.initial_position ].concat(_this.data).concat(data);
+                    if (_this.initial_position) {
+                        return [ _this.initial_position ].concat(_this.data).concat(data);
+                    }
+                    return _this.data.concat(data);
                 }
             }
             return _this.data;
@@ -193,10 +221,35 @@ define(function (require, exports, module) {
         }
         return this.reveal();
     };
-    Navigator.prototype.clearData = function () {
+    Navigator.prototype.resetDisplay = function (opt) {
+        opt = opt || {};
+        // reset data
+        this.initial_position = opt.initial_position || null;
         this.data = [];
-        return this;
-    };
+        // set colors
+        this.lineColor = opt.lineColor || this.lineColor;
+        this.backgroundColor = opt.backgroundColor || this.backgroundColor;
+        this.arrowColor = opt.arrowColor || this.lineColor;
+        if (!opt.keepOldTrace) {
+            this.path.node().remove();
+        }
+        if (opt.changeColor) {
+            this.colorIndex = (this.colorIndex + 1) % maxC;
+            this.lineColor = colors[this.colorIndex];
+            this.arrowColor = opt.arrowColor || this.lineColor;
+        }
+        // remove the arrow from the old trace
+        this.path.style("marker-end",null);
+        // then append the new trace
+        this.path = d3.select(this.path.node().parentNode)
+                        .append("path")
+                        .attr("d", this.line_function(this.data))
+                        .attr("stroke", this.lineColor)
+                        .attr("stroke-width", "2")
+                        .attr("fill", "none");
+        this.defs.select("path").attr("fill", this.arrowColor);
+        this.path.style("marker-end","url(#end-arrow)");
+    }
     Navigator.prototype.renderSample = function (opt) {
         opt = opt || {};
         return this.render(this.example);
