@@ -265,6 +265,13 @@ require([
                 changeColor: true
             });
         });
+        ButtonActionsQueue.getInstance().addListener("FMI_CONNECTION_ERROR", function (evt) {
+            console.log("connection error!");
+            car.navigator.resetDisplay({
+                keepOldTrace: true,
+                changeColor: true
+            });
+        });
 
         // Function used for polling the robot state at periodic intervals
         var tick;
@@ -286,7 +293,7 @@ require([
         // car.position.render("(0.138, -0.08)");
         // car.navigator.render([{ x:0, y:-.50 }, { x:-.100, y:-.50 }, { x:-.100, y:-.150 }, { x:.100, y:-.150 }, { x:.100, y:-.100 }, { x:.200, y:.50 }, { x:-.200, y:-.200 }]);
         // --
-        
+
         // start the simulation
         render();
         start_tick(250); // tick interval is in milliseconds
