@@ -26,25 +26,27 @@ define(function (require, exports, module) {
                     var x = elem.action;
                     var callback = elem.callback;
                     console.log("sending action " + x);
-                    ws.websocket_send(x, function (err, res) {
-                        callback(err, res);
-                        if (err) {
-                            reject(err);
-                            _this.busy = false;
-                            try_send();
-                        } else {
-                            resolve(res);
-                            _this.busy = false;
-                            try_send();
-                        }
-                    }).catch(function (err) {
+                    try {
+                        ws.websocket_send(x, function (err, res) {
+                            if (callback) {
+                                callback(err, res);
+                            }
+                            if (err) {
+                                reject(err);
+                                _this.busy = false;
+                                try_send();
+                            } else {
+                                resolve(res);
+                                _this.busy = false;
+                            }
+                        });
+                    } catch(fmi_connection_error) {
                         _this.fire({
                             type: "FMI_CONNECTION_ERROR"
                         });
-                        reject(err);
                         _this.busy = false;
                         try_send();
-                    });
+                    };
                 });
             }
         }
