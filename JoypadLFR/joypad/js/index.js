@@ -258,19 +258,18 @@ require([
             }
         }
 
-        ButtonActionsQueue.getInstance().addListener("FMI_RECONNECTED", function (evt) {
-            console.log("reconnected!");
+        ButtonActionsQueue.getInstance().addListener("FMI_TRYING_TO_CONNECT", function (evt) {
+            console.log("trying to connect...");
             car.navigator.resetDisplay({
                 keepOldTrace: true,
                 changeColor: true
             });
         });
+        ButtonActionsQueue.getInstance().addListener("FMI_RECONNECTED", function (evt) {
+            console.log("reconnected :)");
+        });
         ButtonActionsQueue.getInstance().addListener("FMI_CONNECTION_ERROR", function (evt) {
-            console.log("connection error!");
-            car.navigator.resetDisplay({
-                keepOldTrace: true,
-                changeColor: true
-            });
+            console.log("connection error :((");
         });
 
         // Function used for polling the robot state at periodic intervals

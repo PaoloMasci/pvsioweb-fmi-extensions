@@ -141,7 +141,6 @@ define(function (require, exports, module) {
 
         opt.x0 = (isNaN(parseFloat(opt.x0)))? 0 : parseFloat(opt.x0);
         opt.y0 = (isNaN(parseFloat(opt.y0)))? 0 : parseFloat(opt.y0);
-        this.initial_position = { x: opt.x0, y: opt.y0  };
         this.data = [];
 
         opt.interpolation = opt.interpolation || "basis";
@@ -183,9 +182,7 @@ define(function (require, exports, module) {
             function pos_change() {
                 return data.length === 1 &&
                         !(data[0].x === _this.data[_this.data.length - 1].x &&
-                            data[0].y === _this.data[_this.data.length - 1].y) ||
-                            !(data[0].x === _this.initial_position.x &&
-                                data[0].y === _this.initial_position.y);
+                            data[0].y === _this.data[_this.data.length - 1].y);
             }
             if (data) {
                 if (data.length > 1 || !_this.data.length || pos_change()) {
@@ -202,9 +199,6 @@ define(function (require, exports, module) {
                     //     _this.scaleX = _this.width / _this.maxX;
                     //     _this.scaleY = _this.height / _this.maxY;
                     // }
-                    if (_this.initial_position) {
-                        return [ _this.initial_position ].concat(_this.data).concat(data);
-                    }
                     return _this.data.concat(data);
                 }
             }
@@ -224,29 +218,30 @@ define(function (require, exports, module) {
     Navigator.prototype.resetDisplay = function (opt) {
         opt = opt || {};
         // reset data
-        this.initial_position = opt.initial_position || null;
         this.data = [];
         // set colors
         this.lineColor = opt.lineColor || this.lineColor;
         this.backgroundColor = opt.backgroundColor || this.backgroundColor;
         this.arrowColor = opt.arrowColor || this.lineColor;
-        if (!opt.keepOldTrace) {
-            this.path.node().remove();
-        }
-        if (opt.changeColor) {
-            this.colorIndex = (this.colorIndex + 1) % maxC;
-            this.lineColor = colors[this.colorIndex];
-            this.arrowColor = opt.arrowColor || this.lineColor;
-        }
         // remove the arrow from the old trace
         this.path.style("marker-end",null);
-        // then append the new trace
-        this.path = d3.select(this.path.node().parentNode)
-                        .append("path")
-                        .attr("d", this.line_function(this.data))
-                        .attr("stroke", this.lineColor)
-                        .attr("stroke-width", "2")
-                        .attr("fill", "none");
+        // then append the new trace, and reuse the current trace if the path is empty
+        if (this.path.attr("d")) {
+            if (!opt.keepOldTrace) {
+                this.path.node().remove();
+            }
+            if (opt.changeColor) {
+                this.colorIndex = (this.colorIndex + 1) % maxC;
+                this.lineColor = colors[this.colorIndex];
+                this.arrowColor = opt.arrowColor || this.lineColor;
+            }
+            this.path = d3.select(this.path.node().parentNode)
+                            .append("path")
+        }
+        this.path.attr("d", this.line_function(this.data))
+                .attr("stroke", this.lineColor)
+                .attr("stroke-width", "2")
+                .attr("fill", "none");
         this.defs.select("path").attr("fill", this.arrowColor);
         this.path.style("marker-end","url(#end-arrow)");
     }
