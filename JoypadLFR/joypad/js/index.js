@@ -14,6 +14,7 @@ require.config({
 require([
         "widgets/TouchscreenButton",
         "widgets/BasicDisplay",
+        "widgets/TextSpeaker",
         "widgets/car/Gauge",
         "widgets/car/Navigator",
         "widgets/ButtonActionsQueue",
@@ -21,6 +22,7 @@ require([
     ], function (
         TouchscreenButton,
         BasicDisplay,
+        Speaker,
         Gauge,
         Navigator,
         ButtonActionsQueue,
@@ -31,11 +33,12 @@ require([
         var PVSioStateParser = require("util/PVSioStateParser");
 
         var DBG = false;
+        var previous_mode; // this is used to keep track of mode changes, useful for voice feedback
 
         // Function automatically invoked by PVSio-web when the back-end sends states updates
-        function onMessageReceived(err, event) {
-            console.log(event);
-            render(event);
+        function onMessageReceived(err, res) {
+            console.log(res);
+            render(res);
         }
 
         var car = {};
@@ -216,8 +219,28 @@ require([
             if (res) {
                 var ans = res.split(";");
                 var state = {};
+                var state_aux = {};
                 var left = 0;
                 var right = 0;
+                if (ans.length >= 2) {
+                    state_aux = PVSioStateParser.parse(ans[1]);
+                    if (state_aux) {
+                        if (!DBG) {
+                            left = PVSioStateParser.evaluate(state_aux["left_rotation"]);
+                            car.speed_left.render(left);
+                            right = PVSioStateParser.evaluate(state_aux["right_rotation"]);
+                            car.speed_right.render(right);
+                        }
+                        var pos_x = PVSioStateParser.evaluate(state_aux["x"]);
+                        var pos_y = PVSioStateParser.evaluate(state_aux["y"]);
+                        car.navigator.render([{ x: pos_x, y: pos_y }]);
+                        car.position.render("(" + pos_x + ", " + pos_y + ")");
+                        var linear = PVSioStateParser.evaluate(state_aux["linear"]);
+                        car.speed.render(linear);
+                        var angular = PVSioStateParser.evaluate(state_aux["angular"]);
+                        // we should use angular to rotate the arrow when the vehicle is spinning
+                    }
+                }
                 if (ans.length >= 1) {
                     state = PVSioStateParser.parse(ans[0]);
                     if (state) {
@@ -234,25 +257,20 @@ require([
                                      : "E";
                         car.gear.render(gear);
                         car.autopilot_display.render(state);
-                    }
-                }
-                if (ans.length >= 2) {
-                    state = PVSioStateParser.parse(ans[1]);
-                    if (state) {
-                        if (!DBG) {
-                            left = PVSioStateParser.evaluate(state["left_rotation"]);
-                            car.speed_left.render(left);
-                            right = PVSioStateParser.evaluate(state["right_rotation"]);
-                            car.speed_right.render(right);
+                        //-- voice feedback for mode changes
+                        if (state["cc"] !== previous_mode) {
+                            (state["cc"] === "AUTO") ? responsiveVoice.speak("engaging autopilot!")
+                                                        : responsiveVoice.speak("manual drive!");
+                            // voice feedback for linear velocity, given after 2.5 seconds to avoid overlapping with "manual drive!"
+                            if (state_aux["linear"]) {
+                                setTimeout(function () {
+                                    responsiveVoice.speak("vehicle speed is " + linear + "kilometers per hour" );
+                                }, 2500);
+                            }
+
                         }
-                        var pos_x = PVSioStateParser.evaluate(state["x"]);
-                        var pos_y = PVSioStateParser.evaluate(state["y"]);
-                        car.navigator.render([{ x: pos_x, y: pos_y }]);
-                        car.position.render("(" + pos_x + ", " + pos_y + ")");
-                        var linear = PVSioStateParser.evaluate(state["linear"]);
-                        car.speed.render(linear);
-                        var angular = PVSioStateParser.evaluate(state["angular"]);
-                        // we should use angular to rotate the arrow when the vehicle is spinning
+                        previous_mode = state["cc"];
+                        console.log(previous_mode);
                     }
                 }
             }
@@ -264,9 +282,11 @@ require([
                 keepOldTrace: true,
                 changeColor: true
             });
+            previous_mode = null;
         });
         ButtonActionsQueue.getInstance().addListener("FMI_RECONNECTED", function (evt) {
-            console.log("reconnected :)");
+            console.log("connected :)");
+            responsiveVoice.speak("connected!");
         });
         ButtonActionsQueue.getInstance().addListener("FMI_CONNECTION_ERROR", function (evt) {
             console.log("connection error :((");
