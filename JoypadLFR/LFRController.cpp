@@ -343,6 +343,9 @@ void initialize(const char* location) {
  * TODO read the string format from a config file*/
 void sendToPVS(const char* action) {
 	
+	fflush(fd);
+	if(strcmp(action,"tick")==0) WebsocketServer(fmiBuffer.realBuffer[1],fmiBuffer.realBuffer[2]); // we want to check the websocket only during the doStep call and avoid doing it after receiving a message
+	
 	/**
 	 *
 	 * we need to change the state according to the input of the FMU
@@ -357,8 +360,6 @@ void sendToPVS(const char* action) {
 	convertDoubletoString(index_state+index_state2,2);
 	
 	
-	fflush(fd);
-	if(strcmp(action,"tick")==0) WebsocketServer(fmiBuffer.realBuffer[1],fmiBuffer.realBuffer[2]); // we want to check the websocket only during the doStep call and avoid doing it after receiving a message
 	sprintf(sendbuff,"%s(",action);
 	strcat(sendbuff,state);
 	strcat(sendbuff,");");
