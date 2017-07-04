@@ -236,6 +236,7 @@ require([
                         car.navigator.render([{ x: pos_x, y: pos_y }]);
                         car.position.render("(" + pos_x + ", " + pos_y + ")");
                         var linear = PVSioStateParser.evaluate(state_aux["linear"]);
+			if(linear < 0)linear= -linear;
                         car.speed.render(linear);
                         var angular = PVSioStateParser.evaluate(state_aux["angular"]);
                         // we should use angular to rotate the arrow when the vehicle is spinning
@@ -264,7 +265,7 @@ require([
                             // voice feedback for linear velocity, given after 2.5 seconds to avoid overlapping with "manual drive!"
                             if (state_aux["linear"]) {
                                 setTimeout(function () {
-                                    responsiveVoice.speak("vehicle speed is " + linear + "kilometers per hour" );
+                                    responsiveVoice.speak("vehicle speed is " + linear + "meters per second" );
                                 }, 2500);
                             }
 

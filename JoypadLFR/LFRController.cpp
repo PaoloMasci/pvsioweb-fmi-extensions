@@ -97,7 +97,7 @@ static int WebSocketCallback(struct lws* wsi, enum lws_callback_reasons reason, 
         printf("CLIENT DISCONNECTED!\n\n");
         break;
     case LWS_CALLBACK_RECEIVE:
-       // printf("LWS_CALLBACK_RECEIVE\n");
+        printf("LWS_CALLBACK_RECEIVE\n");
         //printf("Received message: %s\n", (char*) in);
         sendToPVS((char*) in);
         strcpy(tempstate,state);
@@ -109,26 +109,26 @@ static int WebSocketCallback(struct lws* wsi, enum lws_callback_reasons reason, 
         lws_write(wsi,(unsigned char *)lwssendstate + LWS_SEND_BUFFER_PRE_PADDING,strlen(tempstate),LWS_WRITE_TEXT);
         break;
     case LWS_CALLBACK_HTTP:
-      //  printf("LWS_CALLBACK_HTTP\n");
+        printf("LWS_CALLBACK_HTTP\n");
         break;
     case LWS_CALLBACK_LOCK_POLL:
-     //   printf("LWS_CALLBACK_LOCK_POLL\n");
+        printf("LWS_CALLBACK_LOCK_POLL\n");
         break;
     case LWS_CALLBACK_ADD_POLL_FD:
-     //   printf("LWS_CALLBACK_ADD_POLL_FD\n");
+        printf("LWS_CALLBACK_ADD_POLL_FD\n");
         break;
     case LWS_CALLBACK_UNLOCK_POLL:
-     //   printf("LWS_CALLBACK_UNLOCK_POLL\n");
+        printf("LWS_CALLBACK_UNLOCK_POLL\n");
         break;
     case LWS_CALLBACK_PROTOCOL_INIT:
-       // printf("LWS_CALLBACK_PROTOCOL_INIT\n");
+        printf("LWS_CALLBACK_PROTOCOL_INIT\n");
         break;
     case LWS_CALLBACK_GET_THREAD_ID:
-       // printf("TIMEOUT\n");
-       // printf("LWS_CALLBACK_GET_THREAD_ID\n");
+        printf("TIMEOUT\n");
+        printf("LWS_CALLBACK_GET_THREAD_ID\n");
         break;
     case LWS_CALLBACK_WSI_DESTROY:
-      //  printf("Timeout Happened %i\n", callback_reason);
+        printf("Timeout Happened %i\n", callback_reason);
         break;
     default:
         printf("Unmanaged Callback Reason! %i\n", callback_reason);
@@ -289,7 +289,7 @@ void initialize(const char* location) {
 	sleep(1);
 	system("./bin/relocate");
 
-    sleep(1);
+    sleep(0.01);
     chdir(f);
     pid_of_son = fork();
 	if ( pid_of_son == 0) {
@@ -343,6 +343,9 @@ void initialize(const char* location) {
  * TODO read the string format from a config file*/
 void sendToPVS(const char* action) {
 	
+	fflush(fd);
+	if(strcmp(action,"tick")==0) WebsocketServer(fmiBuffer.realBuffer[1],fmiBuffer.realBuffer[2]); // we want to check the websocket only during the doStep call and avoid doing it after receiving a message
+	
 	/**
 	 *
 	 * we need to change the state according to the input of the FMU
@@ -357,8 +360,6 @@ void sendToPVS(const char* action) {
 	convertDoubletoString(index_state+index_state2,2);
 	
 	
-	fflush(fd);
-	if(strcmp(action,"tick")==0) WebsocketServer(fmiBuffer.realBuffer[1],fmiBuffer.realBuffer[2]); // we want to check the websocket only during the doStep call and avoid doing it after receiving a message
 	sprintf(sendbuff,"%s(",action);
 	strcat(sendbuff,state);
 	strcat(sendbuff,");");
