@@ -16,6 +16,7 @@ require([
         "widgets/BasicDisplay",
         "widgets/TextSpeaker",
         "widgets/car/Gauge",
+        "widgets/LED2",
         "widgets/car/Navigator",
         "widgets/ButtonActionsQueue",
         "websockets/FMIClient"
@@ -24,6 +25,7 @@ require([
         BasicDisplay,
         Speaker,
         Gauge,
+        LED2,
         Navigator,
         ButtonActionsQueue,
         FMIClient
@@ -170,8 +172,7 @@ require([
         		    y0: 0,
                     lineColor: "blue"
                 });
-        car.gear = new BasicDisplay(
-            'gear',
+        car.gear = new BasicDisplay("gear",
             { top: 154, left: 380, width: 24, height: 26 },
             {
                 parent: "joypad",
@@ -180,27 +181,41 @@ require([
                 borderColor: "black",
                 fontsize: 22,
                 backgroundColor: "gray"
-            }
-        );
-        car.position = new BasicDisplay(
-            'position',
+            });
+        car.position = new BasicDisplay("position",
             { top: 246, left: 462, width: 176, height: 12 },
             {
                 parent: "joypad",
                 fontsize: 10,
                 backgroundColor: "gray"
-            }
-        );
-        car.autopilot_display = new BasicDisplay(
-            'cc',
+            });
+        car.autopilot_display = new BasicDisplay("cc",
             { top: 18, left: 386, width: 134, height: 26 },
             {
                 parent: "joypad",
                 fontsize: 16,
                 fontColor: "white",
                 backgroundColor: "transparent"
+            });
+        car.manual_LED = new LED2("manual_LED",
+            { top: 350, left: 426, width: 56, height: 56 },
+            {
+                parent: "joypad",
+                color: "orange",
+                blinking: true
+            });
+        car.autopilot_LED = new LED2("autopilot_LED",
+            { top: 350, left: 426, width: 56, height: 56 },
+            {
+                parent: "joypad",
+                color: "cyan"
+            });
+
+        function speak(txt) {
+            if (responsiveVoice && typeof responsiveVoice.speak === "function") {
+                responsiveVoice.speak(txt);
             }
-        );
+        }
 
         // Render car dashboard components
         function render(res) {
@@ -215,6 +230,8 @@ require([
             car.navigator.reveal();
             car.autopilot_display.render({ cc: "MANUAL" });
             car.gear.render({ gear: "N" });
+            car.autopilot_LED.off();
+            car.manual_LED.on();
             // gauges
             if (res) {
                 var ans = res.split(";");
@@ -236,7 +253,7 @@ require([
                         car.navigator.render([{ x: pos_x, y: pos_y }]);
                         car.position.render("(" + pos_x + ", " + pos_y + ")");
                         var linear = PVSioStateParser.evaluate(state_aux["linear"]);
-			if(linear < 0)linear= -linear;
+			            linear = (linear < 0)? -linear : linear;
                         car.speed.render(linear);
                         var angular = PVSioStateParser.evaluate(state_aux["angular"]);
                         // we should use angular to rotate the arrow when the vehicle is spinning
@@ -258,14 +275,21 @@ require([
                                      : "E";
                         car.gear.render(gear);
                         car.autopilot_display.render(state);
+                        if (state.cc === "AUTO") {
+                            car.manual_LED.off();
+                            car.autopilot_LED.on();
+                        } else {
+                            car.autopilot_LED.off();
+                            car.manual_LED.on();
+                        }
                         //-- voice feedback for mode changes
                         if (state["cc"] !== previous_mode) {
-                            (state["cc"] === "AUTO") ? responsiveVoice.speak("engaging autopilot!")
-                                                        : responsiveVoice.speak("manual drive!");
+                            (state["cc"] === "AUTO") ? speak("engaging autopilot!")
+                                                        : speak("manual drive!");
                             // voice feedback for linear velocity, given after 2.5 seconds to avoid overlapping with "manual drive!"
                             if (state_aux["linear"]) {
                                 setTimeout(function () {
-                                    responsiveVoice.speak("vehicle speed is " + linear + "meters per second" );
+                                    speak("vehicle speed is " + linear + "kilometers per hour" );
                                 }, 2500);
                             }
 
@@ -287,7 +311,7 @@ require([
         });
         ButtonActionsQueue.getInstance().addListener("FMI_RECONNECTED", function (evt) {
             console.log("connected :)");
-            responsiveVoice.speak("connected!");
+            speak("connected!");
         });
         ButtonActionsQueue.getInstance().addListener("FMI_CONNECTION_ERROR", function (evt) {
             console.log("connection error :((");
