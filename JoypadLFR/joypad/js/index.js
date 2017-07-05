@@ -246,7 +246,7 @@ require([
                             left = PVSioStateParser.evaluate(state_aux["left_rotation"]);
                             car.speed_left.render(left);
                             right = PVSioStateParser.evaluate(state_aux["right_rotation"]);
-                            car.speed_right.render(right);
+                            car.speed_right.render(-right);
                         }
                         var pos_x = PVSioStateParser.evaluate(state_aux["x"]);
                         var pos_y = PVSioStateParser.evaluate(state_aux["y"]);

@@ -112,7 +112,7 @@ robotUI: THEORY
                 := (# left := dec_speed(motorSpeed(st)`left, BRAKE_STEP),
                       right := dec_speed(motorSpeed(st)`right, BRAKE_STEP) #)]
 
-  TURN_SPEED: Speed = 0.02
+  TURN_SPEED: Speed = 0.08
   right(st: State): State =
    LET st = autopilot_off(st)
     IN st WITH [cc := MANUAL,
