@@ -265,6 +265,7 @@ define(function (require, exports, module) {
         if (this.buttonReadback() && this.buttonReadback() !== "") {
             Speaker.speak(this.buttonReadback());
         }
+        ButtonHalo.blink(this.id());
         return this;
     };
 

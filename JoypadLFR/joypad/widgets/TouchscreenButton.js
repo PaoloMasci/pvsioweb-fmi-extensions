@@ -139,6 +139,11 @@ define(function (require, exports, module) {
     TouchscreenButton.prototype = Object.create(Widget.prototype);
     TouchscreenButton.prototype.constructor = TouchscreenButton;
     TouchscreenButton.prototype.parentClass = Widget.prototype;
+
+    TouchscreenButton.prototype.click = function () {
+        this.overlayButton.click();
+    };
+    
     /**
      * Returns a JSON object representation of this Widget.
      * @returns {object}

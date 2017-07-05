@@ -28,6 +28,13 @@ define(function (require, exports, module) {
         instance._keyCode2widget = {};
     };
 
+    ButtonHalo.prototype.blink = function (id) {
+        halo(id)
+        setTimeout(function () {
+            haloOff(id);
+        }, 150);
+    };
+
     function halo (buttonID) {
         if (d3.select("." + buttonID).node()) {
             var coords = d3.select("#" + buttonID).attr("coords");
@@ -59,13 +66,17 @@ define(function (require, exports, module) {
                 if (widget && typeof widget.evts === "function" && widget.evts().indexOf('click') > -1) {
                     widget.click({ callback: widget.callback });
                     halo(widget.id());
-                    d3.event.preventDefault();
-                    d3.event.stopPropagation();
+                    if (d3.event) {
+                        d3.event.preventDefault();
+                        d3.event.stopPropagation();
+                    }
                 } else if (widget && typeof widget.evts === "function" && widget.evts().indexOf("press/release") > -1) {
                     widget.pressAndHold({ callback: widget.callback });
                     halo(widget.id());
-                    d3.event.preventDefault();
-                    d3.event.stopPropagation();
+                    if (d3.event) {
+                        d3.event.preventDefault();
+                        d3.event.stopPropagation();
+                    }
                 }
             }
         }
@@ -82,8 +93,10 @@ define(function (require, exports, module) {
                         widget.release({ callback: widget.callback });
                     }
                     haloOff(widget.id());
-                    d3.event.preventDefault();
-                    d3.event.stopPropagation();
+                    if (d3.event) {
+                        d3.event.preventDefault();
+                        d3.event.stopPropagation();
+                    }
                 }
             }
         }

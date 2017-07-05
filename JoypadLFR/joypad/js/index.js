@@ -101,11 +101,11 @@ require([
         }, {
             parent: "joypad"
         });
-        car.autopilot = new TouchscreenButton("autopilot", {  width: 40, height: 35, top: 360, left: 435 }, {
+        car.autopilot = new TouchscreenButton("autopilot", {  width: 40, height: 25, top: 386, left: 542 }, {
             callback: onMessageReceived,
             backgroundColor: "transparent",
             evts: ['click'],
-            keyCode: 72 // h
+            keyCode: 88 // x
         }, {
             parent: "joypad"
         });
@@ -212,9 +212,9 @@ require([
             });
 
         function speak(txt) {
-            if (responsiveVoice && typeof responsiveVoice.speak === "function") {
-                responsiveVoice.speak(txt);
-            }
+            // if (responsiveVoice && typeof responsiveVoice.speak === "function") {
+            //     responsiveVoice.speak(txt);
+            // }
         }
 
         // Render car dashboard components
@@ -342,4 +342,28 @@ require([
         render();
         start_tick(250); // tick interval is in milliseconds
 
+        $(window).on("gamepad_up", function (evt) {
+            car.up.click();
+        });
+        $(window).on("gamepad_down", function (evt) {
+            car.down.click();
+        });
+        $(window).on("gamepad_left", function (evt) {
+            car.left.click();
+        });
+        $(window).on("gamepad_right", function (evt) {
+            car.right.click();
+        });
+        $(window).on("gamepad_Y", function (evt) {
+            car.drive.click();
+        });
+        $(window).on("gamepad_A", function (evt) {
+            car.reverse.click();
+        });
+        $(window).on("gamepad_B", function (evt) {
+            car.neutral.click();
+        });
+        $(window).on("gamepad_X", function (evt) {
+            car.autopilot.click();
+        });
 });
